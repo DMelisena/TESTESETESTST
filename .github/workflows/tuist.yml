@@ -1,5 +1,3 @@
-# .github/workflows/tuist.yml
-
 name: Tuist CI (macOS-15 with platform install)
 
 on:
@@ -13,38 +11,39 @@ on:
 jobs:
   build:
     name: Build Project
-    runs-on: macos-latest  # This now uses macOS-15
+    runs-on: macos-latest
     steps:
-      # 1. Check out your repository's code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set the correct Xcode version
       - name: Select Xcode 16.4
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '16.4'
 
-      # 3. Install iOS platform manually (as suggested in GitHub issue)
-      - name: Install iOS platform
+      # Add a step to create the missing plist file for CI
+      - name: Create GenerativeAI-Info.plist for CI
         run: |
-          echo "Installing iOS platform to fix simulator issues..."
-          xcodebuild -downloadPlatform iOS
-          
-          # List available simulators to verify
-          xcrun simctl list devices available
+          cat > Nemo/Resources/GenerativeAI-Info.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>API_KEY</key>
+              <string>dummy_key_for_ci</string>
+          </dict>
+          </plist>
+          EOF
 
-      # 4. Install Mise and Tuist
+      # Try without the iOS platform download step first
       - name: Setup Mise and Tuist
         uses: jdx/mise-action@v2
 
-      # 5. Run Tuist install
       - name: Install dependencies
         run: tuist install
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
 
-      # 6. Build with Tuist
       - name: Build project
         run: tuist build
         env:
