@@ -5,13 +5,13 @@
 //  Created by Shreyas Venadan on 13/8/2025.
 //
 
-import FirebaseVertexAI
+import GoogleGenerativeAI
 import PhotosUI
 import SwiftUI
 
 struct Gemini: View {
-    // Use the new Firebase Vertex AI SDK
-    let model = VertexAI.vertexAI().generativeModel(modelName: "gemini-1.5-flash")
+    // Use GoogleGenerativeAI directly instead of FirebaseVertexAI
+    let model = GenerativeModel(name: "gemini-1.5-flash", apiKey: "dummy_key_for_ci")
 
     @State var userPrompt = ""
     @State var response = "How can I help you today?"
@@ -148,23 +148,23 @@ struct Gemini: View {
                         throw NSError(domain: "ImageError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
                     }
 
-                    // Create content with both text and image using Firebase SDK
+                    // Create content with both text and image using GoogleGenerativeAI
                     if userPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         // Only image, use a default prompt
-                        result = try await model.generateContent(
+                        result = try await model.generateContent([
                             ModelContent(parts: [
                                 .data(mimetype: "image/jpeg", imageData),
                                 .text("Describe this image in detail."),
-                            ])
-                        )
+                            ]),
+                        ])
                     } else {
                         // Both text and image
-                        result = try await model.generateContent(
+                        result = try await model.generateContent([
                             ModelContent(parts: [
                                 .text(userPrompt),
                                 .data(mimetype: "image/jpeg", imageData),
-                            ])
-                        )
+                            ]),
+                        ])
                     }
                 } else {
                     // Text only

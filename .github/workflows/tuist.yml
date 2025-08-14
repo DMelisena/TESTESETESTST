@@ -35,12 +35,19 @@ jobs:
           </plist>
           EOF
 
-      # Try without the iOS platform download step first
       - name: Setup Mise and Tuist
         uses: jdx/mise-action@v2
 
+      # Clean any existing cache that might be corrupted
+      - name: Clean Tuist cache
+        run: |
+          tuist clean
+          rm -rf ~/.tuist
+          rm -rf Tuist/.build
+
+      # Try install with no-cache first
       - name: Install dependencies
-        run: tuist install
+        run: tuist install --no-cache
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
 

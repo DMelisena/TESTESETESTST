@@ -20,7 +20,8 @@ let project = Project(
             resources: ["Nemo/Resources/**"],
             dependencies: [
                 .external(name: "GoogleGenerativeAI"),
-                .external(name: "FirebaseVertexAI"),
+                // Temporarily remove FirebaseVertexAI to isolate the issue
+                // .external(name: "FirebaseVertexAI"),
             ]
         ),
         .target(
