@@ -1,7 +1,6 @@
 # C4-FindingNemo
 Apple Developer Academy Challenge 4 - Team 10
 
-
 open this link : https://brew.sh/
 you would get this command below :
 ```
@@ -24,9 +23,14 @@ $ cd C4-FindingNemo
 ```
 then generate .xcodeproj file using this command
 ```
-$ tuist generate
+$ tuist install && tuist generate
 ```
-then you can open the .xcodeproj using
+if the code doesn't work, try this one below :
 ```
-$ xcode ./FindingNemo.xcodeproj
+$ tuist install && tuist generate --no-cache
+```
+this should open the xcode automaticallythen you can open the .xcodeproj using
+```
+$ open -a Xcode./FindingNemo.xcodeproj
+
 ```

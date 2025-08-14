@@ -5,9 +5,6 @@ import PackageDescription
     import struct ProjectDescription.PackageSettings
 
     let packageSettings = PackageSettings(
-        // Customize the product types for specific package product
-        // Default is .staticFramework
-        // productTypes: ["Alamofire": .framework,]
         productTypes: [:]
     )
 #endif
@@ -15,19 +12,9 @@ import PackageDescription
 let package = Package(
     name: "Nemo",
     dependencies: [
-        .package(url: "https://github.com/google-gemini/deprecated-generative-ai-swift", .upToNextMajor(from: "0.5.6")),
-        .package(url: "https://github.com/onevcat/Kingfisher", .upToNextMajor(from: "7.12.0"))
+        .package(
+            url: "https://github.com/google-gemini/generative-ai-swift",
+            .upToNextMajor(from: "0.5.6")
+        ),
     ]
 )
-
-// let dependencies = Dependencies(
-//     swiftPackageManager: SwiftPackageManagerDependencies(
-//         [
-//             .remote(
-//                 url: "https://github.com/google-gemini/deprecated-generative-ai-swift",
-//                 requirement: .exact("0.5.6")
-//             ),
-//         ]
-//     ),
-//     platforms: [.iOS, .macOS, .watchOS, .tvOS]
-// )
