@@ -59,12 +59,12 @@ jobs:
           tuist install
           tuist generate
           
-          # Build with generic simulator destination using xcodebuild directly
-          echo "Building with xcodebuild and generic destination..."
+          # Build for iOS device instead of simulator (avoids simulator issues)
+          echo "Building with xcodebuild for iOS device..."
           xcodebuild build \
             -workspace Nemo.xcworkspace \
             -scheme Nemo \
-            -destination "generic/platform=iOS Simulator" \
+            -destination "generic/platform=iOS" \
             CODE_SIGNING_ALLOWED=NO
             
         env:
