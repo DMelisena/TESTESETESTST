@@ -47,7 +47,7 @@ jobs:
 
       # Try install with no-cache first
       - name: Install dependencies
-        run: tuist install --no-cache
+        run: tuist install
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
 
