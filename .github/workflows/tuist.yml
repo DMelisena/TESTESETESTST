@@ -47,17 +47,54 @@ jobs:
           </plist>
           EOF
 
-      # 6. Install iOS runtime if needed
-      - name: Install iOS 17 runtime (fallback)
-        run: |
-          # Check available runtimes
-          xcrun simctl list runtimes
-          
-          # Create a basic simulator if none exist
-          xcrun simctl create "CI-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-0" || echo "Simulator creation failed or already exists"
-
-      # 7. Build with the simplest approach - just specify the SDK
-      - name: Build project  
-        run: tuist build -- -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+      # 6. Generate project without building through Tuist
+      - name: Generate Xcode project
+        run: tuist generate
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
+
+      # 7. List available simulators and create one if needed
+      - name: Setup simulator
+        run: |
+          echo "Available simulators:"
+          xcrun simctl list devices available
+          
+          echo "Available runtimes:"
+          xcrun simctl list runtimes
+          
+          # Try to find any available iOS simulator, or create one
+          AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -o '([A-F0-9\-]*)')
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "No simulators found, creating one..."
+            # Find available iOS runtime
+            RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | head -1 | awk '{print $NF}')
+            if [ -n "$RUNTIME" ]; then
+              xcrun simctl create "CI-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-14" "$RUNTIME"
+              AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "CI-iPhone" | grep -o '([A-F0-9\-]*)')
+            fi
+          fi
+          
+          # Clean up parentheses
+          SIMULATOR_ID=$(echo $AVAILABLE_SIMULATOR | tr -d '()')
+          echo "Using simulator: $SIMULATOR_ID"
+          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
+
+      # 8. Build directly with xcodebuild (bypassing tuist build)
+      - name: Build project with xcodebuild
+        run: |
+          if [ -n "$SIMULATOR_ID" ]; then
+            echo "Building with simulator ID: $SIMULATOR_ID"
+            xcodebuild build \
+              -workspace Nemo.xcworkspace \
+              -scheme Nemo \
+              -destination "id=$SIMULATOR_ID" \
+              CODE_SIGNING_ALLOWED=NO
+          else
+            echo "Building with generic iOS simulator destination"
+            xcodebuild build \
+              -workspace Nemo.xcworkspace \
+              -scheme Nemo \
+              -sdk iphonesimulator \
+              -destination "generic/platform=iOS Simulator" \
+              CODE_SIGNING_ALLOWED=NO
+          fi
