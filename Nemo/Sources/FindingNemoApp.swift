@@ -1,0 +1,31 @@
+//
+//  FindingNemoApp.swift
+//  FindingNemo
+//
+//  Created by Shreyas Venadan on 13/8/2025.
+//
+
+import SwiftData
+import SwiftUI
+
+@main
+struct FindingNemoApp: App {
+    let container: ModelContainer
+
+    init() {
+        do {
+            // TODO: Configure Swift Data container with your models
+            container = try ModelContainer(for: Project.self)
+        } catch {
+            fatalError("Failed to initialize ModelContainer: \(error)")
+        }
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            Gemini()
+            ContentView()
+                .modelContainer(container)
+        }
+    }
+}
