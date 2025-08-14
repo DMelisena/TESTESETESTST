@@ -1,4 +1,0 @@
-module GoogleGenerativeAI {
-    header "/Users/elisena/code/C4-FindingNemo/Tuist/.build/arm64-apple-macosx/debug/GoogleGenerativeAI.build/GoogleGenerativeAI-Swift.h"
-    requires objc
-}

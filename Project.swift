@@ -20,7 +20,7 @@ let project = Project(
             resources: ["Nemo/Resources/**"],
             dependencies: [
                 .external(name: "GoogleGenerativeAI"),
-            ],
+            ]
         ),
         .target(
             name: "NemoTests",

@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - main
-      
 
 jobs:
   build:
@@ -35,6 +34,6 @@ jobs:
 
       # 5. Run Tuist build
       - name: Install dependencies
-        run: tuist build --no-open
+        run: tuist build
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
