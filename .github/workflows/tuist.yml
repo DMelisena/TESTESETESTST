@@ -47,20 +47,19 @@ jobs:
           </plist>
           EOF
 
-      # 6. Clear any Tuist cached destinations and try simple build
-      - name: Build project (clear cache first)
+      # 6. Clear cache and build with xcodebuild directly
+      - name: Build project (bypass Tuist build)
         run: |
           # Clear any cached destinations that might be causing issues
           rm -rf ~/.tuist
           rm -rf .tuist
           
-          # Try building with clean cache
+          # Generate the project fresh
           tuist clean
-          tuist install
-          tuist generate --no-cache
+          tuist generate
           
           # Build with generic simulator destination using xcodebuild directly
-          echo "Building with xcodebuild..."
+          echo "Building with xcodebuild and generic destination..."
           xcodebuild build \
             -workspace Nemo.xcworkspace \
             -scheme Nemo \
