@@ -20,7 +20,7 @@ jobs:
       - name: Select Xcode 16.2.0
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2.0'
+          xcode-version: '16.4.0'
 
       # 3. Install Mise and Tuist
       - name: Setup Mise and Tuist
