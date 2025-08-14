@@ -32,40 +32,8 @@ jobs:
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
 
-      # 5. Create API key file for build
-      - name: Create GenerativeAI-Info.plist
-        run: |
-          mkdir -p Nemo/Resources
-          cat > Nemo/Resources/GenerativeAI-Info.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>API_KEY</key>
-              <string>dummy-api-key-for-ci</string>
-          </dict>
-          </plist>
-          EOF
-
       # 6. Clear cache and build with xcodebuild directly
       - name: Build project (bypass Tuist build)
-        run: |
-          # Clear any cached destinations that might be causing issues
-          rm -rf ~/.tuist
-          rm -rf .tuist
-          
-          # Generate the project fresh
-          tuist clean
-          tuist install
-          tuist generate
-          
-          # Build for iOS device instead of simulator (avoids simulator issues)
-          echo "Building with xcodebuild for iOS device..."
-          xcodebuild build \
-            -workspace Nemo.xcworkspace \
-            -scheme Nemo \
-            -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO
-            
+        run: tuist build
         env:
           TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN}}
