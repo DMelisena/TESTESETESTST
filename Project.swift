@@ -20,6 +20,7 @@ let project = Project(
             resources: ["Nemo/Resources/**"],
             dependencies: [
                 .external(name: "GoogleGenerativeAI"),
+                .external(name: "FirebaseVertexAI"),
             ]
         ),
         .target(

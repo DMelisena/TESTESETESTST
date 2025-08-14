@@ -5,20 +5,13 @@
 //  Created by Shreyas Venadan on 13/8/2025.
 //
 
-//
-//  ContentView.swift
-//  FindingNemo
-//
-//  Created by Shreyas Venadan on 13/8/2025.
-//
-
-import SwiftUI
-import GoogleGenerativeAI
+import FirebaseVertexAI
 import PhotosUI
+import SwiftUI
 
 struct Gemini: View {
-    // Use gemini-1.5-flash which supports vision
-    let model = GenerativeModel(name: "gemini-1.5-flash", apiKey: APIKey.default)
+    // Use the new Firebase Vertex AI SDK
+    let model = VertexAI.vertexAI().generativeModel(modelName: "gemini-1.5-flash")
 
     @State var userPrompt = ""
     @State var response = "How can I help you today?"
@@ -27,10 +20,10 @@ struct Gemini: View {
     @State var isShowingImagePicker = false
     @State var imageSelection: PhotosPickerItem?
     @State var showingImageOptions = false
-    
+
     // Add your own preset images here (put these image files in your Xcode project)
     let presetImages = ["sample1", "sample2", "sample3"] // Your image file names
-    
+
     var body: some View {
         VStack {
             Text("Welcome to Gemini AI")
@@ -38,7 +31,7 @@ struct Gemini: View {
                 .fontWeight(.bold)
                 .foregroundStyle(.indigo)
                 .padding(.top, 20)
-            
+
             // Image display area
             if let selectedImage = selectedImage {
                 Image(uiImage: selectedImage)
@@ -48,21 +41,21 @@ struct Gemini: View {
                     .cornerRadius(10)
                     .padding()
             }
-            
-            ZStack  {
+
+            ZStack {
                 ScrollView {
                     Text(response)
                         .font(.title2)
                         .padding()
                 }
-                
+
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .indigo))
                         .scaleEffect(3)
                 }
             }
-            
+
             VStack(spacing: 10) {
                 // Image selection buttons
                 HStack(spacing: 15) {
@@ -80,12 +73,13 @@ struct Gemini: View {
                     .onChange(of: imageSelection) { _, newValue in
                         Task {
                             if let data = try? await newValue?.loadTransferable(type: Data.self),
-                               let image = UIImage(data: data) {
+                               let image = UIImage(data: data)
+                            {
                                 selectedImage = image
                             }
                         }
                     }
-                    
+
                     // Preset images button
                     Button {
                         showingImageOptions = true
@@ -103,14 +97,14 @@ struct Gemini: View {
                         ActionSheet(
                             title: Text("Choose Image"),
                             buttons: presetImages.map { imageName in
-                                    .default(Text(imageName)) {
-                                        selectedImage = UIImage(named: imageName)
-                                    }
+                                .default(Text(imageName)) {
+                                    selectedImage = UIImage(named: imageName)
+                                }
                             } + [.cancel()]
                         )
                     }
                 }
-                
+
                 // Clear image button
                 if selectedImage != nil {
                     Button("Remove Image") {
@@ -119,7 +113,7 @@ struct Gemini: View {
                     }
                     .foregroundColor(.red)
                 }
-                
+
                 // Text input
                 TextField("Ask about the image or anything else...", text: $userPrompt, axis: .vertical)
                     .lineLimit(3)
@@ -128,51 +122,61 @@ struct Gemini: View {
                     .background(Color.indigo.opacity(0.2), in: Capsule())
                     .disableAutocorrection(true)
                     .onSubmit {
-                         generateResponse()
+                        generateResponse()
                     }
             }
             .padding()
         }
         .padding()
     }
-    
+
     func generateResponse() {
         guard !userPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil else {
             return
         }
-        
+
         isLoading = true
         response = ""
-        
+
         Task {
             do {
                 let result: GenerateContentResponse
-                
+
                 if let image = selectedImage {
                     // Convert UIImage to Data
                     guard let imageData = image.jpegData(compressionQuality: 0.8) else {
                         throw NSError(domain: "ImageError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
                     }
-                    
-                    // Create content with both text and image
+
+                    // Create content with both text and image using Firebase SDK
                     if userPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         // Only image, use a default prompt
-                        result = try await model.generateContent(ModelContent.Part.data(mimetype: "image/jpeg", imageData), "Describe this image in detail.")
+                        result = try await model.generateContent(
+                            ModelContent(parts: [
+                                .data(mimetype: "image/jpeg", imageData),
+                                .text("Describe this image in detail."),
+                            ])
+                        )
                     } else {
                         // Both text and image
-                        result = try await model.generateContent(userPrompt, ModelContent.Part.data(mimetype: "image/jpeg", imageData))
+                        result = try await model.generateContent(
+                            ModelContent(parts: [
+                                .text(userPrompt),
+                                .data(mimetype: "image/jpeg", imageData),
+                            ])
+                        )
                     }
                 } else {
                     // Text only
                     result = try await model.generateContent(userPrompt)
                 }
-                
+
                 await MainActor.run {
                     isLoading = false
                     response = result.text ?? "No response found"
                     userPrompt = ""
                 }
-                
+
             } catch {
                 await MainActor.run {
                     isLoading = false
